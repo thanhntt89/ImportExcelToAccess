@@ -7,14 +7,34 @@ namespace ImportExcel2Access.Util
 {
     public class FileConfig
     {
-        private string ConfigFilePath;
+        public string ConfigFilePath;
         private string CurrentExePath = Assembly.GetExecutingAssembly().GetName().Name;
 
-        [DllImport("kernel32", CharSet = CharSet.Auto)]
+        [DllImport("kernel32", CharSet = CharSet.Unicode)]
         static extern long WritePrivateProfileString(string Section, string Key, string Value, string FilePath);
 
-        [DllImport("kernel32", CharSet = CharSet.Auto)]
+        [DllImport("kernel32", CharSet = CharSet.Unicode)]
         static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
+
+        /// <summary>
+        /// Check file exist
+        /// </summary>
+        public bool IsExist
+        {
+            get
+            {
+                return File.Exists(ConfigFilePath);
+            }
+        }
+
+        /// <summary>
+        /// Check access file exist
+        /// </summary>
+        public bool IsKeyNullOrEmpty(string keyName)
+        {
+            string key = Read(keyName);
+            return string.IsNullOrEmpty(key);
+        }
 
         public FileConfig(string IniPath = null)
         {
@@ -47,11 +67,5 @@ namespace ImportExcel2Access.Util
         {
             return Read(Key, Section).Length > 0;
         }
-
-        public void Reading()
-        {
-            var dt = File.ReadAllText(ConfigFilePath);
-        }
-
     }
 }

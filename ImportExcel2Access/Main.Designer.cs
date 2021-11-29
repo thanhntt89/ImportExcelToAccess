@@ -33,6 +33,7 @@ namespace ImportExcel2Access
             this.txtDataSource = new System.Windows.Forms.TextBox();
             this.btnFilePath = new System.Windows.Forms.Button();
             this.btnExecute = new System.Windows.Forms.Button();
+            this.lblWatermask = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // txtDataSource
@@ -45,6 +46,10 @@ namespace ImportExcel2Access
             this.txtDataSource.Size = new System.Drawing.Size(353, 26);
             this.txtDataSource.TabIndex = 1;
             this.txtDataSource.WordWrap = false;
+            this.txtDataSource.Click += new System.EventHandler(this.txtDataSource_Click);
+            this.txtDataSource.TextChanged += new System.EventHandler(this.txtDataSource_TextChanged);
+            this.txtDataSource.Enter += new System.EventHandler(this.txtDataSource_Enter);
+            this.txtDataSource.Leave += new System.EventHandler(this.txtDataSource_Leave);
             // 
             // btnFilePath
             // 
@@ -68,12 +73,23 @@ namespace ImportExcel2Access
             this.btnExecute.UseVisualStyleBackColor = true;
             this.btnExecute.Click += new System.EventHandler(this.btnExecute_Click);
             // 
+            // lblWatermask
+            // 
+            this.lblWatermask.AutoSize = true;
+            this.lblWatermask.BackColor = System.Drawing.Color.White;
+            this.lblWatermask.Location = new System.Drawing.Point(19, 22);
+            this.lblWatermask.Name = "lblWatermask";
+            this.lblWatermask.Size = new System.Drawing.Size(133, 13);
+            this.lblWatermask.TabIndex = 4;
+            this.lblWatermask.Text = "ファイルを選択してください。";
+            // 
             // Main
             // 
             this.AcceptButton = this.btnExecute;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(468, 105);
+            this.Controls.Add(this.lblWatermask);
             this.Controls.Add(this.btnExecute);
             this.Controls.Add(this.btnFilePath);
             this.Controls.Add(this.txtDataSource);
@@ -94,6 +110,7 @@ namespace ImportExcel2Access
         private System.Windows.Forms.TextBox txtDataSource;
         private System.Windows.Forms.Button btnFilePath;
         private System.Windows.Forms.Button btnExecute;
+        private System.Windows.Forms.Label lblWatermask;
     }
 }
 

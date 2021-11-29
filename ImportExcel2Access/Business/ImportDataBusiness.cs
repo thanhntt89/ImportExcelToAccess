@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ImportExcel2Access.Util;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace ImportExcel2Access.Business
     {
         private OleDbTransaction accessTransac = null;
         private OleDbConnection accessConnection = null;
-      
+
 
         public ImportDataBusiness()
         {
@@ -51,13 +53,18 @@ namespace ImportExcel2Access.Business
                 string columName = string.Empty;
                 int rowCount = 1;
                 object value = null;
+                int colCount = 0;
 
                 //Get base group
-                tbBaseGroup = GetBaseGroup();
+                tbBaseGroup = AccessGetBaseGroup();
 
                 foreach (DataRow row in importData.Rows)
                 {
                     // insert to access                   
+                    if (row["No"] == null)
+                        continue;
+
+                    colCount++;
 
                     Parameters parameters = new Parameters();
                     parameters.Add(new Parameter()
@@ -74,7 +81,7 @@ namespace ImportExcel2Access.Business
                         columName = col.ColumnName;
 
                         //Ignor column No, 取込
-                        if (columName.Equals("No") || columName.Equals("取込"))
+                        if (columName.Equals(Constant.ROW_INDEX_HEADER_TEXT) || columName.Equals("No") || columName.Equals("取込"))
                             continue;
 
                         //Reset value
@@ -120,7 +127,7 @@ namespace ImportExcel2Access.Business
                         parameters.Add(new Parameter()
                         {
                             Name = string.Format("@{0}", col.ColumnName),
-                            Values = value
+                            Values = value == null ? DBNull.Value : value
                         });
 
                         columns += string.Format("[{0}],", columName);
@@ -140,21 +147,18 @@ namespace ImportExcel2Access.Business
                     rowCount++;
 
                     maxNo++;
-                }      
-                
-                //Excel update column status
-                ExcelHelps.UpdateExcelStatusColumn(GetConnection.GetExcelPath, importData, 1);
+                }
 
                 // Commit to access
                 accessTransac.Commit();
                 accessConnection.Close();
+
+                //Excel update column status
+                ExcelHelps.UpdateExcelColumn(GetConnection.GetExcelPath, Constant.SHEET_NAME, importData,  Constant.COLUMN_IMPORT_STATUS_HEADER_TEXT, 1);
             }
             catch (Exception ex)
             {
                 //Excel reset column status if commit has exception
-              
-                ExcelHelps.UpdateExcelStatusColumn(GetConnection.GetExcelPath, importData, string.Empty);
-
                 accessTransac.Rollback();
                 accessConnection.Close();
                 throw ex;
@@ -163,27 +167,10 @@ namespace ImportExcel2Access.Business
 
 
         /// <summary>
-        /// Get base id
-        /// </summary>
-        /// <returns></returns>
-        private DataTable GetBaseId()
-        {
-            try
-            {
-                string query = "select * from 拠点ID";
-                return SqlHelps.ExecuteDataset(GetConnection.GetAccessConnectionString, CommandType.Text, query).Tables[0];
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Get Base group
         /// </summary>
         /// <returns></returns>
-        private DataTable GetBaseGroup()
+        private DataTable AccessGetBaseGroup()
         {
             try
             {
@@ -199,13 +186,38 @@ namespace ImportExcel2Access.Business
         /// <summary>
         /// Get data to import from excel
         /// </summary>
+        /// <param name="colums">Columns valid</param>
         /// <returns></returns>
-        public DataTable GetDataFromExcel()
+        public DataTable GetDataFilter(DataTable dataTable, List<string> colums)
         {
             try
             {
-                string excelSelectQuery = string.Format("select * from {0} where 修正済= '済' and 取込 is null", Constant.EXCEL_TABLE_NAME);
-                return SqlHelps.ExecuteDataset(GetConnection.GetExcelConnectionString, CommandType.Text, excelSelectQuery).Tables[0];
+                DataTable dt = new DataTable();
+
+                if (dataTable == null)
+                    return null;
+
+                //Removed row = 1
+                var tmpTb = dataTable.Rows.Cast<DataRow>().Where(r => r.Field<object>("No") != null && r.Field<object>("修正済") != null && r.Field<object>("修正済").ToString().Equals("済") && (r.Field<object>("取込") == null || r.Field<object>("取込") != null && !r.Field<object>("取込").ToString().Equals("1")));
+
+                if (tmpTb.Count() > 0)
+                    dt = tmpTb.CopyToDataTable();
+
+                //Get current column in table
+                List<string> currentColumns = Utils.GetColumns(dt);
+
+                // Get columns not valid 
+                var excepColumns = currentColumns.Except(colums).ToList();
+
+                //Removed column not valid 
+                foreach (var col in excepColumns)
+                {
+                    if (col.Equals(Constant.ROW_INDEX_HEADER_TEXT)) 
+                        continue;
+                    dt.Columns.Remove(col);
+                }
+                dt.AcceptChanges();
+                return dt;
             }
             catch (Exception ex)
             {

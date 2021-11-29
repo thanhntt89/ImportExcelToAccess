@@ -42,7 +42,7 @@ namespace ImportExcel2Access.Util
             public string FilePath { get; set; }
             public string GetLogInfo()
             {
-                return string.Format("***************************************************************\n【発生日時】 {0}\n【発生箇所】 {1}\n【障害内容】 {2}\n",DateTime.Now.ToString("yyyy/MM/dd HH:mm:SS"), this.FunctionName, this.ErrorMessage);
+                return string.Format("***************************************************************\n【発生日時】 {0}\n【発生箇所】 {1}\n【障害内容】 {2}\n",DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), this.FunctionName, this.ErrorMessage);
             }
         }
     }

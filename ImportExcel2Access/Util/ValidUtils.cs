@@ -16,12 +16,22 @@ namespace ImportExcel2Access.Util
         public static bool IsNullOrDateTime(string dateString)
         {
             DateTime result;
+
             try
             {
                 if (string.IsNullOrWhiteSpace(dateString))
                     return true;
 
                 return DateTime.TryParse(dateString, out result);
+
+                //string[] data = dateString.Split('/');
+                //int yyyy = int.Parse(data[2].Split(' ')[0]);
+                //int MM = int.Parse(data[0]);
+                //int dd = int.Parse(data[1]);
+
+                //result = new DateTime(yyyy, MM, dd);
+
+                // return true;               
             }
             catch
             {
@@ -38,7 +48,7 @@ namespace ImportExcel2Access.Util
         {
             if (string.IsNullOrWhiteSpace(numberString))
                 return true;
-            return numberString.All(char.IsDigit);
+            return numberString.Replace("-", "").Replace("+", "").All(char.IsDigit);
         }
 
         /// <summary>
